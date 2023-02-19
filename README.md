@@ -1,24 +1,78 @@
-# CapistranoGoodJob
+# Capistrano Systemd integration for GoodJob
 
-TODO: Delete this and the text below, and describe your gem
+Adds the following capistrano commands:
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/capistrano_good_job`. To experiment with that code, run `bin/console` for an interactive prompt.
+```sh
+good_job:disable                    # Disable good_job systemd service
+good_job:enable                     # Enable good_job systemd service
+good_job:install                    # Install good_job systemd service
+good_job:reload                     # Reload good_job service via systemd
+good_job:restart                    # Restart good_job service via systemd
+good_job:start                      # Start good_job service via systemd
+good_job:status                     # Get good_job service status via systemd
+good_job:stop                       # Stop good_job service via systemd
+good_job:uninstall                  # Uninstall good_job systemd service
+```
+
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add this line to your application's Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
+```ruby
+group :development do
+  gem 'capistrano-good-job', require: false
+end
+```
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+And then execute:
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+    $ bundle
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+# Capfile
+
+require 'capistrano/good_job'
+install_plugin Capistrano::GoodJob
+```
+
+To prevent loading [the hooks](lib/capistrano-good-job.rb) of the plugin, add false to the load_hooks param.
+```ruby
+# Capfile
+
+install_plugin Capistrano::GoodJob, load_hooks: false
+```
+
+Then run once
+
+```sh
+bundle exec cap production good_job:install
+```
+
+for the initial setup. This will copy a [`systemd` service definition](lib/capistrano/templates/good_job.service.erb) to `~/.config/systemd/user/symantiq_good_job.service` on your server marked with Capistrano role `db`.
+
+It will also `enable` it in `systemd`, allowing to to then run commands such as:
+
+```sh
+systemctl --user status your_app_good_job_production
+systemctl --user start your_app_good_job_production
+systemctl --user stop your_app_good_job_production
+systemctl --user reload your_app_good_job_production
+systemctl --user restart your_app_good_job_production
+```
+
+through their Capistrano counterparts, ex: `bundle exec cap good_job:restart`.
 
 ## Usage
 
-TODO: Write usage instructions here
+The plugin has registered a Capistrano `hook` to run `bundle exec cap good_job:restart` after deploy:
+
+```ruby
+after "deploy:finished", "good_job:restart"
+```
+
+See [`#register_hooks`](lib/capistrano/good_job.rb:17)
+
 
 ## Development
 
@@ -28,8 +82,12 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/capistrano_good_job.
+Bug reports and pull requests are welcome on GitHub at https://github.com/mtomov/capistrano_good_job.
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+## Credits
+
+The structure and code of the gem are heavily inspired by [`capistrano-puma`](https://github.com/seuros/capistrano-puma)'s [`systemd` tasks](https://github.com/seuros/capistrano-puma/blob/master/lib/capistrano/tasks/systemd.rake)

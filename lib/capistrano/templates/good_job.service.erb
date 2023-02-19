@@ -1,0 +1,26 @@
+[Unit]
+Description=GoodJob background job
+After=network.target
+
+[Service]
+Type=simple
+
+WorkingDirectory=<%= current_path %>
+ExecStart=<%= capture(:echo, SSHKit.config.command_map[:bundle]).strip %> exec good_job start
+
+Environment='RAILS_ENV=production'
+
+ExecReload=/bin/kill -s USR2 $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+
+# if we crash, restart
+RestartSec=1
+Restart=on-failure
+
+<%="StandardOutput=append:#{fetch(:good_job_access_log)}" if fetch(:good_job_access_log) %>
+<%="StandardError=append:#{fetch(:good_job_error_log)}" if fetch(:good_job_error_log) %>
+
+SyslogIdentifier=<%= fetch(:good_job_service_unit_name) %>
+
+[Install]
+WantedBy=default.target
