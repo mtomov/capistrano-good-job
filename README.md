@@ -36,7 +36,7 @@ require 'capistrano/good_job'
 install_plugin Capistrano::GoodJob
 ```
 
-To prevent loading [the hooks](lib/capistrano-good-job.rb) of the plugin, add false to the load_hooks param.
+To prevent loading [the hooks](lib/capistrano/good_job.rb) of the plugin, add false to the load_hooks param.
 ```ruby
 # Capfile
 
@@ -71,7 +71,7 @@ The plugin has registered a Capistrano `hook` to run `bundle exec cap good_job:r
 after "deploy:finished", "good_job:restart"
 ```
 
-See [`#register_hooks`](lib/capistrano/good_job.rb:17)
+See [`#register_hooks`](lib/capistrano/good_job.rb)
 
 
 ## Development
