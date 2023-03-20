@@ -6,7 +6,7 @@ namespace :good_job do
   desc "Install good_job systemd service"
   task :install do
     on roles(fetch(:good_job_role)) do |role|
-      execute :mkdir, "-p", fetch(:systemd_conf_dir)
+      execute :mkdir, "-p", fetch(:good_job_systemd_conf_dir)
 
       service_file = File.expand_path("../../templates/good_job.service.erb", __FILE__)
       erb = File.read(service_file)
